@@ -207,11 +207,23 @@ h2{
 
   /* Media queries - Responsive timeline on screens less than 600px wide */
   @media screen and (max-width: 600px) {
-    
+  
+    #cover > .jumbotron{
+      background-image: url(img/portrait-mobile.png);
+      margin-top: 235px;
+      background-position: center 25%;
+      min-height: 400px;
+      height: 400px;
+  }
+
+  
+
     #about-me .card-columns{
       column-count: 1;
     }
     .jumbotron > h1{
+      position: absolute;
+      top: 85px;
       padding-top: 30px;
       font-size: 2rem;
     }
