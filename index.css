@@ -210,6 +210,7 @@ h2{
   
     #cover > .jumbotron{
       background-image: url(img/portrait-mobile.png);
+
       margin-top: 235px;
       background-position: center 25%;
       min-height: 400px;
