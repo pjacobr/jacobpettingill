@@ -195,9 +195,43 @@ h2{
     border-radius: 6px;
   }
 
-  
+  @media screen and (max-width: 900px){
+    #about-me .card-columns{
+      column-count: 2;
+    }
+    .tab-content > .tab-pane img{
+      width: 100%;
+    }
+  }
+
+
   /* Media queries - Responsive timeline on screens less than 600px wide */
   @media screen and (max-width: 600px) {
+    
+    #about-me .card-columns{
+      column-count: 1;
+    }
+    .jumbotron > h1{
+      padding-top: 30px;
+      font-size: 2rem;
+    }
+
+    
+
+    .list-group-horizontal{
+      flex-direction: column !important;
+    }
+
+    .tab-pane{
+      text-align: center;
+    }
+
+    .tab-pane *{
+      margin: auto;
+    }
+  
+
+
   /* Place the timelime to the left */
     .timeline::after {
       left: 31px;
@@ -242,6 +276,22 @@ h2{
     }
   }
 
+  @media screen and (max-width: 400px) {
+     /* Full-width timeline-containers */
+     .timeline-container, .timeline-container-same {
+      width: 100%;
+      padding-left: 20px;
+      padding-right: 25px;
+    }
+    /* Make sure all circles are at the same spot */
+    .timeline-left::after, .timeline-right::after, .timeline-container-same::after {
+      left: -4px;
+    }
+    .timeline::after{
+      left:10px;
+    }
+  }
+
   .bottom-footer{
     text-align: center;
     background-color: rgba(0, 85, 85, .5);
@@ -273,4 +323,5 @@ h2{
   .justify-content-center{
     text-align: center;
   }
+
 
