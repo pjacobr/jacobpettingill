@@ -494,29 +494,14 @@ textarea::placeholder {
 .diff-options {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 16px;
   flex-wrap: wrap;
 }
 
-.diff-options .setting-group {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.diff-options .setting-group label {
-  font-size: 12px;
-  font-weight: 500;
+.diff-info {
+  font-size: 14px;
   color: #64748b;
-}
-
-.diff-options .setting-group input,
-.diff-options .setting-group select {
-  padding: 4px 8px;
-  border: 1px solid #e2e8f0;
-  border-radius: 4px;
-  font-size: 12px;
-  width: 80px;
+  font-style: italic;
 }
 
 .diff-stats {
@@ -642,11 +627,6 @@ input[type="checkbox"] {
   background: white;
 }
 
-.diff-line.context {
-  background: #f8fafc;
-  color: #94a3b8;
-  font-style: italic;
-}
 
 .line-number {
   width: 60px;
@@ -708,36 +688,6 @@ input[type="checkbox"] {
 .diff-split-content {
   flex: 1;
   overflow: auto;
-}
-
-/* Inline diff styles */
-.diff-inline {
-  padding: 16px;
-  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-  font-size: 14px;
-  line-height: 1.6;
-  white-space: pre-wrap;
-}
-
-.diff-char.added,
-.diff-words.added,
-.diff-sentences.added {
-  background: #dcfce7;
-  color: #166534;
-}
-
-.diff-char.removed,
-.diff-words.removed,
-.diff-sentences.removed {
-  background: #fef2f2;
-  color: #991b1b;
-  text-decoration: line-through;
-}
-
-.diff-char.unchanged,
-.diff-words.unchanged,
-.diff-sentences.unchanged {
-  background: transparent;
 }
 
 /* Responsive */

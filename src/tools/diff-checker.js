@@ -8,10 +8,6 @@ export function initDiffChecker() {
   const lineNumbers1 = document.getElementById('diff-line-numbers-1')
   const lineNumbers2 = document.getElementById('diff-line-numbers-2')
   const splitViewCheckbox = document.getElementById('diff-split-view')
-  const ignoreWhitespaceCheckbox = document.getElementById('diff-ignore-whitespace')
-  const ignoreCaseCheckbox = document.getElementById('diff-ignore-case')
-  const contextLinesInput = document.getElementById('diff-context-lines')
-  const diffModeSelect = document.getElementById('diff-mode')
   const diffStats = document.getElementById('diff-stats')
 
   const sampleText1 = `function calculateTotal(items) {
@@ -52,20 +48,6 @@ console.log("Subtotal + Tax:", total.toFixed(2));`
     lineNumbersEl.innerHTML = Array.from({length: lines}, (_, i) => i + 1).join('\n')
   }
 
-  function preprocessText(text) {
-    let processed = text
-    
-    if (ignoreCaseCheckbox.checked) {
-      processed = processed.toLowerCase()
-    }
-    
-    if (ignoreWhitespaceCheckbox.checked) {
-      // Normalize whitespace but preserve line structure
-      processed = processed.replace(/[ \t]+/g, ' ').replace(/[ \t]*\n/g, '\n')
-    }
-    
-    return processed
-  }
 
   function calculateStats(diff) {
     let additions = 0
@@ -141,28 +123,7 @@ console.log("Subtotal + Tax:", total.toFixed(2));`
       return
     }
 
-    const processedText1 = preprocessText(text1)
-    const processedText2 = preprocessText(text2)
-    
-    let diff
-    const mode = diffModeSelect.value
-    
-    switch (mode) {
-      case 'lines':
-        diff = Diff.diffLines(processedText1, processedText2)
-        break
-      case 'words':
-        diff = Diff.diffWords(processedText1, processedText2)
-        break
-      case 'chars':
-        diff = Diff.diffChars(processedText1, processedText2)
-        break
-      case 'sentences':
-        diff = Diff.diffSentences(processedText1, processedText2)
-        break
-      default:
-        diff = Diff.diffLines(processedText1, processedText2)
-    }
+    const diff = Diff.diffLines(text1, text2)
 
     const stats = calculateStats(diff)
     updateStats(stats)
@@ -170,72 +131,16 @@ console.log("Subtotal + Tax:", total.toFixed(2));`
     let diffHtml = ''
     let lineNum1 = 1
     let lineNum2 = 1
-    const contextLines = parseInt(contextLinesInput.value) || 3
 
-    if (mode === 'lines') {
-      // Line-based diff with context
-      const contextDiff = addContext(diff, contextLines)
-      
-      if (splitViewCheckbox.checked) {
-        diffHtml = generateSplitView(contextDiff, lineNum1, lineNum2)
-      } else {
-        diffHtml = generateUnifiedView(contextDiff, lineNum1, lineNum2)
-      }
+    if (splitViewCheckbox.checked) {
+      diffHtml = generateSplitView(diff, lineNum1, lineNum2)
     } else {
-      // Word/character/sentence diff
-      diffHtml = generateInlineDiff(diff, mode)
+      diffHtml = generateUnifiedView(diff, lineNum1, lineNum2)
     }
 
     diffOutput.innerHTML = `<div class="diff-content">${diffHtml}</div>`
   }
 
-
-  function addContext(diff, contextLines) {
-    if (contextLines === 0) return diff
-    
-    const result = []
-    let contextBuffer = []
-    
-    for (let i = 0; i < diff.length; i++) {
-      const part = diff[i]
-      
-      if (!part.added && !part.removed) {
-        // Unchanged content
-        const lines = part.value.split('\n')
-        if (lines[lines.length - 1] === '') lines.pop()
-        
-        if (contextBuffer.length > 0 || result.some(p => p.added || p.removed)) {
-          // Add leading context
-          const leadingContext = lines.slice(0, contextLines)
-          if (leadingContext.length > 0) {
-            result.push({ value: leadingContext.join('\n') + '\n' })
-          }
-          
-          // Add trailing context from previous unchanged block
-          if (lines.length > contextLines * 2) {
-            result.push({ value: '...\n', context: true })
-          }
-          
-          // Add trailing context
-          const trailingContext = lines.slice(-contextLines)
-          if (trailingContext.length > 0) {
-            contextBuffer = [{ value: trailingContext.join('\n') + '\n' }]
-          }
-        } else {
-          contextBuffer.push(part)
-        }
-      } else {
-        // Changed content
-        if (contextBuffer.length > 0) {
-          result.push(...contextBuffer)
-          contextBuffer = []
-        }
-        result.push(part)
-      }
-    }
-    
-    return result
-  }
 
   function generateSplitView(diff, startLine1, startLine2) {
     let html = '<div class="diff-split-container">'
@@ -246,11 +151,6 @@ console.log("Subtotal + Tax:", total.toFixed(2));`
     let lineNum2 = startLine2
     
     diff.forEach(part => {
-      if (part.context) {
-        html += `<div class="diff-line context"><span class="line-number">...</span><span class="diff-marker"> </span><span class="line-content">...</span></div>`
-        return
-      }
-      
       const lines = part.value.split('\n')
       if (lines[lines.length - 1] === '') lines.pop()
 
@@ -277,11 +177,6 @@ console.log("Subtotal + Tax:", total.toFixed(2));`
     html += '<div class="diff-split-content">'
     
     diff.forEach(part => {
-      if (part.context) {
-        html += `<div class="diff-line context"><span class="line-number">...</span><span class="diff-marker"> </span><span class="line-content">...</span></div>`
-        return
-      }
-      
       const lines = part.value.split('\n')
       if (lines[lines.length - 1] === '') lines.pop()
 
@@ -314,15 +209,6 @@ console.log("Subtotal + Tax:", total.toFixed(2));`
     let lineNum2 = startLine2
 
     diff.forEach(part => {
-      if (part.context) {
-        html += `<div class="diff-line context">
-          <span class="line-number">...</span>
-          <span class="diff-marker"> </span>
-          <span class="line-content">...</span>
-        </div>`
-        return
-      }
-      
       const lines = part.value.split('\n')
       if (lines[lines.length - 1] === '') lines.pop()
 
@@ -356,23 +242,6 @@ console.log("Subtotal + Tax:", total.toFixed(2));`
     return html
   }
 
-  function generateInlineDiff(diff, mode) {
-    let html = '<div class="diff-inline">'
-    
-    diff.forEach(part => {
-      const className = part.added ? 'added' : part.removed ? 'removed' : 'unchanged'
-      const marker = part.added ? '+' : part.removed ? '-' : ' '
-      
-      if (mode === 'chars') {
-        html += `<span class="diff-char ${className}">${escapeHtml(part.value)}</span>`
-      } else {
-        html += `<span class="diff-${mode} ${className}"><span class="diff-marker">${marker}</span>${escapeHtml(part.value)}</span>`
-      }
-    })
-    
-    html += '</div>'
-    return html
-  }
 
   function escapeHtml(text) {
     const div = document.createElement('div')
@@ -429,10 +298,6 @@ console.log("Subtotal + Tax:", total.toFixed(2));`
   })
 
   splitViewCheckbox.addEventListener('change', generateDiff)
-  ignoreWhitespaceCheckbox.addEventListener('change', generateDiff)
-  ignoreCaseCheckbox.addEventListener('change', generateDiff)
-  contextLinesInput.addEventListener('change', generateDiff)
-  diffModeSelect.addEventListener('change', generateDiff)
 
   // Button handlers
   document.getElementById('diff-sample-1').addEventListener('click', () => {
