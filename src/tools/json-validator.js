@@ -199,6 +199,17 @@ export function initJsonValidator() {
   }
 
   function attemptRepair(text) {
+    // First try the jsonrepair library - it's much more robust
+    try {
+      const repaired = jsonrepair(text)
+      // Test if the repair worked
+      JSON.parse(repaired)
+      return repaired
+    } catch (error) {
+      console.log('jsonrepair failed, trying fallback repair:', error.message)
+    }
+
+    // Fallback to our custom repair logic
     try {
       let repaired = text
 
@@ -211,29 +222,57 @@ export function initJsonValidator() {
       // Step 3: Remove trailing commas
       repaired = repaired.replace(/,(\s*[}\]])/g, '$1')
       
-      // Step 4: Fix common escape sequence issues
+      // Step 4: Add missing closing braces/brackets
+      const openBraces = (repaired.match(/{/g) || []).length
+      const closeBraces = (repaired.match(/}/g) || []).length
+      const openBrackets = (repaired.match(/\[/g) || []).length
+      const closeBrackets = (repaired.match(/\]/g) || []).length
+      
+      // Add missing closing braces
+      for (let i = 0; i < openBraces - closeBraces; i++) {
+        repaired += '}'
+      }
+      
+      // Add missing closing brackets
+      for (let i = 0; i < openBrackets - closeBrackets; i++) {
+        repaired += ']'
+      }
+      
+      // Step 5: Fix common escape sequence issues
       repaired = repaired.replace(/\\'/g, "'") // Remove unnecessary escapes
       
-      // Step 5: Fix missing commas between array/object elements
+      // Step 6: Fix missing commas between array/object elements
       repaired = repaired.replace(/}(\s*){/g, '},$1{')
       repaired = repaired.replace(/](\s*)\[/g, '],$1[')
-      repaired = repaired.replace(/"(\s*)"(?=\s*[^:,}\]])/g, '"$1",')
       
-      // Step 6: Fix numbers with leading zeros
+      // Step 7: Fix numbers with leading zeros
       repaired = repaired.replace(/:\s*0+(\d+)/g, ': $1')
       
-      // Step 7: Remove comments (// and /* */)
+      // Step 8: Remove comments (// and /* */)
       repaired = repaired.replace(/\/\/.*$/gm, '')
       repaired = repaired.replace(/\/\*[\s\S]*?\*\//g, '')
       
-      // Step 8: Fix undefined/null values
+      // Step 9: Fix undefined/null values
       repaired = repaired.replace(/:\s*undefined/g, ': null')
       
       // Test if the repair worked
-      JSON.parse(repaired)
+      if (/[{,]\s*[a-zA-Z_$][a-zA-Z0-9_$]*\s*:/g.test(text)) {
       return repaired
     } catch {
       // If basic repair fails, try more aggressive fixes
+      // Check for incomplete JSON structures
+      const openBraces = (text.match(/{/g) || []).length
+      const closeBraces = (text.match(/}/g) || []).length
+      const openBrackets = (text.match(/\[/g) || []).length
+      const closeBrackets = (text.match(/\]/g) || []).length
+      
+      if (openBraces !== closeBraces) {
+        issues.push(`Mismatched braces: ${openBraces} opening, ${closeBraces} closing`)
+      }
+      if (openBrackets !== closeBrackets) {
+        issues.push(`Mismatched brackets: ${openBrackets} opening, ${closeBrackets} closing`)
+      }
+
       try {
         let aggressive = text
         
