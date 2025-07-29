@@ -259,7 +259,7 @@ export function initJsonValidator() {
       if (/[{,]\s*[a-zA-Z_$][a-zA-Z0-9_$]*\s*:/g.test(text)) {
       }
       return repaired
-    } catch {
+    } catch (error) {
       // If basic repair fails, try more aggressive fixes
       // Check for incomplete JSON structures
       const openBraces = (text.match(/{/g) || []).length
@@ -293,7 +293,7 @@ export function initJsonValidator() {
         
         JSON.parse(aggressive)
         return aggressive
-      } catch {
+      } catch (error) {
         return null
       }
     }
