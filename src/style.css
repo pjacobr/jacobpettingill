@@ -740,6 +740,83 @@ input[type="checkbox"] {
   background: transparent;
 }
 
+/* Advanced diff formats */
+.github-diff {
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.hunk-header {
+  background: #f1f8ff;
+  color: #586069;
+  padding: 8px 16px;
+  border: 1px solid #c8e1ff;
+  font-weight: 600;
+  margin: 8px 0;
+}
+
+.github-added {
+  background: #cdffd8;
+  border-left: 3px solid #28a745;
+}
+
+.github-removed {
+  background: #ffeef0;
+  border-left: 3px solid #d73a49;
+}
+
+.github-unchanged {
+  background: white;
+}
+
+.line-marker {
+  display: inline-block;
+  width: 20px;
+  text-align: center;
+  font-weight: bold;
+  margin-right: 8px;
+}
+
+.patch-format {
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 14px;
+  line-height: 1.5;
+  padding: 16px;
+  background: #f8f9fa;
+  border: 1px solid #e1e4e8;
+  border-radius: 6px;
+  overflow-x: auto;
+  white-space: pre;
+}
+
+/* Diff2Html integration styles */
+.d2h-wrapper {
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace !important;
+  font-size: 14px !important;
+}
+
+.d2h-file-header {
+  background: #f1f8ff !important;
+  border-color: #c8e1ff !important;
+}
+
+.d2h-code-line-ctn {
+  line-height: 1.5 !important;
+}
+
+.d2h-ins {
+  background: #cdffd8 !important;
+}
+
+.d2h-del {
+  background: #ffeef0 !important;
+}
+
+.d2h-cntx {
+  background: white !important;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .app-container {
