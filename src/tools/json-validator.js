@@ -257,6 +257,7 @@ export function initJsonValidator() {
       
       // Test if the repair worked
       if (/[{,]\s*[a-zA-Z_$][a-zA-Z0-9_$]*\s*:/g.test(text)) {
+      }
       return repaired
     } catch {
       // If basic repair fails, try more aggressive fixes
