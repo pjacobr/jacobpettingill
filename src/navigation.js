@@ -54,18 +54,31 @@ export function initNavigation() {
   // Handle share button
   const shareBtn = document.querySelector('.share-btn')
   if (shareBtn) {
-    shareBtn.addEventListener('click', () => {
+    shareBtn.addEventListener('click', async () => {
       if (navigator.share) {
-        navigator.share({
-          title: 'Developer Toolkit',
-          text: 'Check out this developer toolkit with JSON, YAML, SQL, and diff tools!',
-          url: window.location.href
-        })
+        try {
+          await navigator.share({
+            title: 'Developer Toolkit',
+            text: 'Check out this developer toolkit with JSON, YAML, SQL, and diff tools!',
+            url: window.location.href
+          })
+        } catch (error) {
+          // Fall back to copying URL if share fails
+          try {
+            await navigator.clipboard.writeText(window.location.href)
+            alert('URL copied to clipboard!')
+          } catch (clipboardError) {
+            console.error('Failed to copy to clipboard:', clipboardError)
+          }
+        }
       } else {
         // Fallback to copying URL
-        navigator.clipboard.writeText(window.location.href).then(() => {
+        try {
+          await navigator.clipboard.writeText(window.location.href)
           alert('URL copied to clipboard!')
-        })
+        } catch (error) {
+          console.error('Failed to copy to clipboard:', error)
+        }
       }
     })
   }
