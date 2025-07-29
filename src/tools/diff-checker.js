@@ -1,5 +1,4 @@
 import * as Diff from 'diff'
-import { html } from 'diff2html'
 import { createTwoFilesPatch, structuredPatch } from 'diff'
 
 export function initDiffChecker() {
@@ -14,10 +13,6 @@ export function initDiffChecker() {
   const contextLinesInput = document.getElementById('diff-context-lines')
   const diffModeSelect = document.getElementById('diff-mode')
   const diffStats = document.getElementById('diff-stats')
-  const diffFormatSelect = document.getElementById('diff-format')
-  const showLineNumbersCheckbox = document.getElementById('diff-show-line-numbers')
-  const highlightSyntaxCheckbox = document.getElementById('diff-highlight-syntax')
-  const compactModeCheckbox = document.getElementById('diff-compact-mode')
 
   const sampleText1 = `function calculateTotal(items) {
   let total = 0;
@@ -149,22 +144,6 @@ console.log("Subtotal + Tax:", total.toFixed(2));`
     const processedText1 = preprocessText(text1)
     const processedText2 = preprocessText(text2)
     
-    const format = diffFormatSelect.value
-    
-    if (format === 'diff2html') {
-      generateDiff2Html(processedText1, processedText2)
-      return
-    }
-    
-    if (format === 'github') {
-      generateGitHubStyleDiff(processedText1, processedText2)
-      return
-    }
-    
-    if (format === 'patch') {
-      generatePatchFormat(processedText1, processedText2)
-      return
-    }
     let diff
     const mode = diffModeSelect.value
     
@@ -210,154 +189,6 @@ console.log("Subtotal + Tax:", total.toFixed(2));`
     diffOutput.innerHTML = `<div class="diff-content">${diffHtml}</div>`
   }
 
-  function generateDiff2Html(text1, text2) {
-    try {
-      const patch = createTwoFilesPatch('original.txt', 'changed.txt', text1, text2, 'Original', 'Changed')
-      const diff2htmlConfig = {
-        drawFileList: false,
-        matching: 'lines',
-        outputFormat: splitViewCheckbox.checked ? 'side-by-side' : 'line-by-line',
-        synchronisedScroll: true,
-        highlight: highlightSyntaxCheckbox.checked,
-        renderNothingWhenEmpty: false
-      }
-      
-      const diffHtml = html(patch, diff2htmlConfig)
-      diffOutput.innerHTML = diffHtml
-      
-      // Calculate stats from the patch
-      const stats = calculateStatsFromPatch(patch)
-      updateStats(stats)
-    } catch (error) {
-      console.error('Diff2Html error:', error)
-      fallbackToBasicDiff(text1, text2)
-    }
-  }
-
-  function generateGitHubStyleDiff(text1, text2) {
-    const patch = structuredPatch('original.txt', 'changed.txt', text1, text2, 'Original', 'Changed')
-    let html = '<div class="github-diff">'
-    
-    patch.hunks.forEach(hunk => {
-      html += `<div class="hunk-header">@@ -${hunk.oldStart},${hunk.oldLines} +${hunk.newStart},${hunk.newLines} @@</div>`
-      
-      hunk.lines.forEach(line => {
-        const type = line[0]
-        const content = line.substring(1)
-        const className = type === '+' ? 'added' : type === '-' ? 'removed' : 'unchanged'
-        
-        html += `<div class="diff-line github-${className}">
-          <span class="line-marker">${type}</span>
-          <span class="line-content">${escapeHtml(content)}</span>
-        </div>`
-      })
-    })
-    
-    html += '</div>'
-    diffOutput.innerHTML = html
-    
-    const stats = calculateStatsFromStructuredPatch(patch)
-    updateStats(stats)
-  }
-
-  function generatePatchFormat(text1, text2) {
-    const patch = createTwoFilesPatch('a/file.txt', 'b/file.txt', text1, text2, 'Original', 'Changed')
-    const html = `<pre class="patch-format">${escapeHtml(patch)}</pre>`
-    diffOutput.innerHTML = html
-    
-    const stats = calculateStatsFromPatch(patch)
-    updateStats(stats)
-  }
-
-  function calculateStatsFromPatch(patch) {
-    const lines = patch.split('\n')
-    let additions = 0
-    let deletions = 0
-    let unchanged = 0
-    
-    lines.forEach(line => {
-      if (line.startsWith('+') && !line.startsWith('+++')) {
-        additions++
-      } else if (line.startsWith('-') && !line.startsWith('---')) {
-        deletions++
-      } else if (line.startsWith(' ')) {
-        unchanged++
-      }
-    })
-    
-    return { additions, deletions, modifications: 0, unchanged }
-  }
-
-  function calculateStatsFromStructuredPatch(patch) {
-    let additions = 0
-    let deletions = 0
-    let unchanged = 0
-    
-    patch.hunks.forEach(hunk => {
-      hunk.lines.forEach(line => {
-        const type = line[0]
-        if (type === '+') {
-          additions++
-        } else if (type === '-') {
-          deletions++
-        } else {
-          unchanged++
-        }
-      })
-    })
-    
-    return { additions, deletions, modifications: 0, unchanged }
-  }
-
-  function fallbackToBasicDiff(text1, text2) {
-    // Fallback to our existing diff logic
-    const diff = Diff.diffLines(text1, text2)
-    const stats = calculateStats(diff)
-    updateStats(stats)
-    
-    let diffHtml = generateUnifiedView(diff, 1, 1)
-    diffOutput.innerHTML = `<div class="diff-content">${diffHtml}</div>`
-  }
-
-  function exportAdvancedDiff() {
-    const text1 = diffInput1.value
-    const text2 = diffInput2.value
-    const format = diffFormatSelect.value
-    
-    let content = ''
-    let filename = 'diff'
-    let mimeType = 'text/plain'
-    
-    switch (format) {
-      case 'patch':
-        content = createTwoFilesPatch('a/file.txt', 'b/file.txt', text1, text2, 'Original', 'Changed')
-        filename = 'diff.patch'
-        break
-      case 'unified':
-        content = createTwoFilesPatch('original.txt', 'changed.txt', text1, text2, 'Original', 'Changed')
-        filename = 'diff.unified'
-        break
-      case 'json':
-        const structPatch = structuredPatch('original.txt', 'changed.txt', text1, text2, 'Original', 'Changed')
-        content = JSON.stringify(structPatch, null, 2)
-        filename = 'diff.json'
-        mimeType = 'application/json'
-        break
-      default:
-        content = createTwoFilesPatch('original.txt', 'changed.txt', text1, text2, 'Original', 'Changed')
-        filename = 'diff.patch'
-    }
-    
-    const blob = new Blob([content], { type: mimeType })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = filename
-    a.click()
-    URL.revokeObjectURL(url)
-    
-    showToast(`Exported as ${filename}`)
-  }
 
   function addContext(diff, contextLines) {
     if (contextLines === 0) return diff
@@ -602,10 +433,6 @@ console.log("Subtotal + Tax:", total.toFixed(2));`
   ignoreCaseCheckbox.addEventListener('change', generateDiff)
   contextLinesInput.addEventListener('change', generateDiff)
   diffModeSelect.addEventListener('change', generateDiff)
-  diffFormatSelect.addEventListener('change', generateDiff)
-  showLineNumbersCheckbox.addEventListener('change', generateDiff)
-  highlightSyntaxCheckbox.addEventListener('change', generateDiff)
-  compactModeCheckbox.addEventListener('change', generateDiff)
 
   // Button handlers
   document.getElementById('diff-sample-1').addEventListener('click', () => {
@@ -633,7 +460,6 @@ console.log("Subtotal + Tax:", total.toFixed(2));`
   })
 
   document.getElementById('diff-export').addEventListener('click', exportDiff)
-  document.getElementById('diff-export-advanced').addEventListener('click', exportAdvancedDiff)
   document.getElementById('diff-copy').addEventListener('click', copyDiff)
 
   // Initialize
